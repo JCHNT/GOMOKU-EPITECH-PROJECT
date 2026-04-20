@@ -1,0 +1,20 @@
+# Build artifacts
+*.o
+*.obj
+*.exe
+pbrain-gomoku-ai
+tests/gomoku_test
+tests/gomoku_test_bonus
+tests/*.o
+*.bonus.o
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Coverage
+*.gcno
+*.gcda
+coverage/
