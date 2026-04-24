@@ -1,6 +1,7 @@
 #pragma once
 
 #include "board/zobrist.hpp"
+#include "engine/patterns.hpp"
 #include "util/types.hpp"
 #include <cstdint>
 #include <vector>
@@ -36,6 +37,9 @@ public:
     uint32_t line_mask(Color c, LineKind kind, int idx) const {
         return lines_[c == BLACK ? 0 : 1][kind][idx];
     }
+
+    Patterns::Counts count_patterns(Color c) const;
+    bool has_five(Color c) const;
 
     static int line_pos(LineKind kind, int x, int y);
     static int line_index(LineKind kind, int x, int y);

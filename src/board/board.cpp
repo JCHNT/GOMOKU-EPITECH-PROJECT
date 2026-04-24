@@ -49,6 +49,31 @@ bool Board::make_move(Move m, Color c) {
     return true;
 }
 
+Patterns::Counts Board::count_patterns(Color c) const {
+    Patterns::Counts total{};
+    const int ci = (c == BLACK) ? 0 : 1;
+    const int oi = 1 - ci;
+    for (int k = 0; k < 4; ++k) {
+        int max_idx;
+        switch (k) {
+            case LINE_ROW: max_idx = N_ROWS; break;
+            case LINE_COL: max_idx = N_COLS; break;
+            case LINE_DIAG: max_idx = N_DIAGS; break;
+            case LINE_ANTI: max_idx = N_ANTIS; break;
+            default: max_idx = 0;
+        }
+        for (int i = 0; i < max_idx; ++i) {
+            auto line = Patterns::count_line(lines_[ci][k][i], lines_[oi][k][i]);
+            for (int p = 0; p < Patterns::COUNT; ++p) total[p] += line[p];
+        }
+    }
+    return total;
+}
+
+bool Board::has_five(Color c) const {
+    return count_patterns(c)[Patterns::FIVE] > 0;
+}
+
 void Board::undo_move() {
     if (history_.empty()) return;
     const auto entry = history_.back();
