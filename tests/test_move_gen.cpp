@@ -47,3 +47,27 @@ TEST_CASE("full board returns empty", "[move_gen]") {
     auto moves = MoveGen::candidates(b);
     REQUIRE(moves.empty());
 }
+
+TEST_CASE("ordering puts winning move first", "[move_gen][ordering]") {
+    Board b;
+    b.make_move({5, 10}, BLACK);
+    b.make_move({6, 10}, BLACK);
+    b.make_move({7, 10}, BLACK);
+    b.make_move({8, 10}, BLACK);
+    auto ordered = MoveGen::ordered_candidates(b, BLACK);
+    REQUIRE(ordered.size() > 0);
+    bool first_is_winning = (ordered[0] == Move{4, 10}) || (ordered[0] == Move{9, 10});
+    REQUIRE(first_is_winning);
+}
+
+TEST_CASE("ordering prioritises blocking opp FIVE", "[move_gen][ordering]") {
+    Board b;
+    b.make_move({3, 5}, WHITE);
+    b.make_move({4, 5}, WHITE);
+    b.make_move({5, 5}, WHITE);
+    b.make_move({6, 5}, WHITE);
+    auto ordered = MoveGen::ordered_candidates(b, BLACK);
+    REQUIRE(ordered.size() > 0);
+    bool first_is_block = (ordered[0] == Move{2, 5}) || (ordered[0] == Move{7, 5});
+    REQUIRE(first_is_block);
+}
