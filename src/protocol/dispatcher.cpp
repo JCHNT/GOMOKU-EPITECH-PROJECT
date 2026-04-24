@@ -3,6 +3,10 @@
 #include <sstream>
 #include <string>
 
+#ifdef BONUS
+#include "tss.hpp"
+#endif
+
 namespace gomoku {
 
 static constexpr size_t TT_ENTRIES = 1u << 20;
@@ -13,6 +17,23 @@ Dispatcher::Dispatcher(std::istream& in, std::ostream& out)
 void Dispatcher::play_search_move(Color side) {
     int empty = BOARD_CELLS - board_.stone_count();
     tm_.start_turn(empty);
+
+#ifdef BONUS
+    Move tss_move;
+    if (TSS::find_vcf(board_, side, 10, tss_move)) {
+        board_.make_move(tss_move, side);
+        out_ << static_cast<int>(tss_move.x) << "," << static_cast<int>(tss_move.y) << "\n";
+        out_.flush();
+        return;
+    }
+    if (TSS::find_vct(board_, side, 8, tss_move)) {
+        board_.make_move(tss_move, side);
+        out_ << static_cast<int>(tss_move.x) << "," << static_cast<int>(tss_move.y) << "\n";
+        out_.flush();
+        return;
+    }
+#endif
+
     Search s(tt_, tm_);
     Move m = s.go(board_, side, 64);
     if (!Board::in_bounds(m)) {
