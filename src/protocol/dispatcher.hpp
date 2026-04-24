@@ -6,6 +6,11 @@
 #include "engine/tt.hpp"
 #include "protocol/parser.hpp"
 #include <iosfwd>
+#include <vector>
+
+#ifdef BONUS
+#include "book.hpp"
+#endif
 
 namespace gomoku {
 
@@ -26,6 +31,11 @@ private:
     TimeMgr tm_;
     bool board_mode_ = false;
     bool running_ = true;
+
+#ifdef BONUS
+    Book book_;
+    std::vector<Move> book_history_;
+#endif
 };
 
 } // namespace gomoku
