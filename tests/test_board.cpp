@@ -53,3 +53,67 @@ TEST_CASE("stone_count reflects move history", "[board]") {
     b.undo_move();
     REQUIRE(b.stone_count() == 1);
 }
+
+TEST_CASE("line bitboards reflect placed stones (horizontal)", "[board][lines]") {
+    Board b;
+    b.make_move({3, 7}, BLACK);
+    b.make_move({5, 7}, BLACK);
+    uint32_t row = b.line_mask(BLACK, Board::LINE_ROW, 7);
+    REQUIRE((row & (1u << 3)) != 0);
+    REQUIRE((row & (1u << 5)) != 0);
+    REQUIRE((row & (1u << 4)) == 0);
+}
+
+TEST_CASE("line bitboards reflect placed stones (vertical)", "[board][lines]") {
+    Board b;
+    b.make_move({10, 2}, WHITE);
+    b.make_move({10, 9}, WHITE);
+    uint32_t col = b.line_mask(WHITE, Board::LINE_COL, 10);
+    REQUIRE((col & (1u << 2)) != 0);
+    REQUIRE((col & (1u << 9)) != 0);
+}
+
+TEST_CASE("line bitboards clear on undo", "[board][lines]") {
+    Board b;
+    b.make_move({4, 4}, BLACK);
+    REQUIRE(b.line_mask(BLACK, Board::LINE_ROW, 4) != 0);
+    b.undo_move();
+    REQUIRE(b.line_mask(BLACK, Board::LINE_ROW, 4) == 0);
+}
+
+TEST_CASE("diagonals track stones (main diagonal, x - y const)", "[board][lines]") {
+    Board b;
+    b.make_move({5, 5}, BLACK);
+    b.make_move({7, 7}, BLACK);
+    uint32_t diag = b.line_mask(BLACK, Board::LINE_DIAG, 19);
+    REQUIRE((diag & (1u << 5)) != 0);
+    REQUIRE((diag & (1u << 7)) != 0);
+}
+
+TEST_CASE("anti-diagonals track stones (x + y const)", "[board][lines]") {
+    Board b;
+    b.make_move({3, 7}, WHITE);
+    b.make_move({6, 4}, WHITE);
+    uint32_t anti = b.line_mask(WHITE, Board::LINE_ANTI, 10);
+    REQUIRE((anti & (1u << 3)) != 0);
+    REQUIRE((anti & (1u << 6)) != 0);
+}
+
+TEST_CASE("line_pos round-trips: single stone produces exactly one bit on each line", "[board][lines]") {
+    using LK = Board::LineKind;
+    for (int y = 0; y < BOARD_SIZE; ++y) {
+        for (int x = 0; x < BOARD_SIZE; ++x) {
+            for (int k = 0; k < 4; ++k) {
+                auto kind = static_cast<LK>(k);
+                int idx = Board::line_index(kind, x, y);
+                int pos = Board::line_pos(kind, x, y);
+                Board b;
+                b.make_move({(int8_t)x, (int8_t)y}, BLACK);
+                uint32_t mask = b.line_mask(BLACK, kind, idx);
+                INFO("x=" << x << " y=" << y << " kind=" << k << " idx=" << idx << " pos=" << pos);
+                REQUIRE((mask & (1u << pos)) != 0);
+                REQUIRE(__builtin_popcount(mask) == 1);
+            }
+        }
+    }
+}
